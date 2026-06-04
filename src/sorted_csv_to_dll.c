@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "setting_up.h"
+#include "../include/setting_up.h"
 
 // Function to create a new node for the doubly linked list
 student_node* create_node(student_node student) {

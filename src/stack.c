@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "setting_up.h"
-#include "stack.h"
+#include "../include/setting_up.h"
+#include "../include/stack.h"
 
 
 // Function to initialize the stack with a given size

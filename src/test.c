@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include "setting_up.h"
-#include "hash.h"
-#include "stack.h"
-#include "queue.h"
+#include "../include/setting_up.h"
+#include "../include/hash.h"
+#include "../include/stack.h"
+#include "../include/queue.h"
 
 #define OUTPUT_FILE "sorted_students.csv"
-#define CSV_FILE "student_data.csv"
+#define CSV_FILE "../data/student_data.csv"
 
 // link logistic.c data_to_sorted_csv.c sorted_csv_to_dll.c linked_list.c hash.c stack.c queue.c while executing
 int main()

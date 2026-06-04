@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include"setting_up.h"
+#include "../include/setting_up.h"
 
 #define MAX_STUDENTS 1000
 #define OUTPUT_FILE "sorted_students.csv"

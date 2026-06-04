@@ -1,6 +1,6 @@
-#include "setting_up.h"
-#include "hash.h"
-#include "linked_list.h"
+#include "../include/setting_up.h"
+#include "../include/hash.h"
+#include "../include/linked_list.h"
 
 // Function to create and initialize the hash table, size is total number of rooms 
 hash_table* create_hash_table(int size) {

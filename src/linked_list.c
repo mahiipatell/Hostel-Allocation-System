@@ -1,4 +1,4 @@
-#include "linked_list.h"
+#include "../include/linked_list.h"
 
 //initialises a doubly linked list of students
 void init_dll(student_node_dll *dlls) {

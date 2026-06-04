@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "queue.h"
+#include "../include/queue.h"
 
 // Initialize the queue
 void init_queue(queue *q) {
