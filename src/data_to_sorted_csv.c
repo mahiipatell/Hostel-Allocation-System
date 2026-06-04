@@ -46,7 +46,7 @@ int read_students(const char *filename, student_node *students) {
     }
 
     int count = 0;
-    while (count < MAX_STUDENTS && fscanf(file, "%*[^,],%99[^,],%llu,%14[^,],%14[^,],%f\n",
+    while (count < MAX_STUDENTS && fscanf(file, "%*[^,],%99[^,],%I64u,%14[^,],%14[^,],%f\n",
         students[count].name, &students[count].mis,
         students[count].branch, students[count].category, &students[count].cgpa) == 5) {
         
@@ -98,7 +98,7 @@ void write_students(const char *filename, student_node *students, int count) {
 
     for (int i = 0; i < count; i++) {
         students[i].merit_no = i + 1;  // Assign chronological merit number
-        fprintf(file, "%u,%s,%llu,%s,%s,%f,%d\n",
+        fprintf(file, "%u,%s,%I64u,%s,%s,%f,%d\n",
             students[i].merit_no, students[i].name, students[i].mis,
             students[i].branch, students[i].category, students[i].weighted_cgpa, students[i].room_no);
     }

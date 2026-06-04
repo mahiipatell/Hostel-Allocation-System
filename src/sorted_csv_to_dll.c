@@ -35,7 +35,7 @@ void print_list(student_node_dll *list) {
     student_node* temp = list->head;
     printf("Doubly Linked List Contents:\n");
     while (temp != NULL) {
-        printf("Merit No: %u, Name: %s, MIS: %llu, Branch: %s, Category: %s, CGPA: %.2f, Weighted CGPA: %.2f, Room No: %d\n",
+        printf("Merit No: %u, Name: %s, MIS: %I64u, Branch: %s, Category: %s, CGPA: %.2f, Weighted CGPA: %.2f, Room No: %d\n",
                temp->merit_no, temp->name, temp->mis, temp->branch, temp->category, temp->cgpa, temp->weighted_cgpa, temp->room_no);
         temp = temp->next;  // Move to the next node
     }
@@ -52,7 +52,7 @@ student_node_dll create_dll_from_csv(const char *filename) {
 
     student_node student;
     // Read the CSV file line by line
-    while (fscanf(file, "%u,%99[^,],%llu,%14[^,],%14[^,],%f,%d\n",
+    while (fscanf(file, "%u,%99[^,],%I64u,%14[^,],%14[^,],%f,%d\n",
                   &student.merit_no, student.name, &student.mis,
                   student.branch, student.category, &student.weighted_cgpa, &student.room_no) == 7) {
         insert_end(&list, student);  // Insert each student node at the end of the list

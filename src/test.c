@@ -5,7 +5,7 @@
 #include "../include/queue.h"
 
 #define OUTPUT_FILE "sorted_students.csv"
-#define CSV_FILE "../data/student_data.csv"
+#define CSV_FILE "data/student_data.csv"
 
 // link logistic.c data_to_sorted_csv.c sorted_csv_to_dll.c linked_list.c hash.c stack.c queue.c while executing
 int main()
@@ -29,8 +29,8 @@ int main()
     // print_list(&list);  // Print the doubly linked list*/
 
     // hash function initialize
-    hash_table *fixed_rooms = create_hash_table(l[0] * l[1]);
-    hash_table *hold_rooms = create_hash_table(l[0] * l[1]);
+    hash_table *fixed_rooms = create_hash_table(l[0] * l[1], l[0], l[1]);
+    hash_table *hold_rooms = create_hash_table(l[0] * l[1], l[0], l[1]);
 
     // all 6 stacks initialize as counters
     stack mechanical_general;
@@ -81,7 +81,7 @@ int main()
          // Ask the user for MIS and check with three chances
          while (chances > 0) {
              printf("Please enter your MIS number\n");
-             scanf("%llu", &entered_mis);
+             scanf("%I64u", &entered_mis);
 
              if (entered_mis == temp->mis || entered_mis == 1234) {
                 if(entered_mis == 1234){
@@ -222,7 +222,7 @@ int main()
 
             if (room_number != 0)
             {
-                int index = hash_function(room_number, (l[0] * l[1]));
+                int index = hash_function(room_number, l[0], l[1]);
                 append_to_hash(fixed_rooms, index, info_from_merit_no(&list, temp->merit_no));
                 temp->room_no = room_number;
                 printf("Your room has been allotted\n");
@@ -238,7 +238,7 @@ int main()
             printf("\n");
             scanf("%d", &room_number);
             // table size is total rooms ie total floors into total rooms
-            int index = hash_function(room_number, (l[0] * l[1]));
+            int index =  hash_function(room_number, l[0], l[1]);
             // add name to fixed room list
             int check = append_to_hash(fixed_rooms, index, info_from_merit_no(&list, temp->merit_no));
             if(check == -1) {
@@ -293,7 +293,7 @@ int main()
             printf("\n");
             scanf("%d", &room_number);
             // table size is total rooms ie total floors into total rooms
-            int index = hash_function(room_number, (l[0] * l[1]));
+            int index = hash_function(room_number, l[0], l[1]);
             // add name to fixed room list
             append_to_hash(fixed_rooms, index, info_from_merit_no(&list, temp->merit_no));
             temp->room_no = room_number;
@@ -316,7 +316,7 @@ int main()
             }
 
             // Write current node's information to the file
-            fprintf(file, "MIS: %llu, Name: %s, Branch: %s, Category: %s, Room Number: %d\n",
+            fprintf(file, "MIS: %I64u, Name: %s, Branch: %s, Category: %s, Room Number: %d\n",
                     temp->mis, temp->name, temp->branch, temp->category, temp->room_no);
 
             // Close the file
@@ -354,7 +354,7 @@ int main()
          // Ask the user for MIS and check with three chances
          while (chances > 0) {
              printf("Please enter your MIS number\n");
-             scanf("%llu", &entered_mis);
+             scanf("%I64u", &entered_mis);
 
              if (entered_mis == tempw->mis || entered_mis == 1234) {
                 if(entered_mis == 1234){
@@ -419,7 +419,7 @@ int main()
         printf("\n");
         scanf("%d", &room_number);
         // table size is total rooms ie total floors into total rooms
-        int index = hash_function(room_number, (l[0] * l[1]));
+        int index = hash_function(room_number, l[0], l[1]);
         // add name to fixed room list
         int check = append_to_hash(fixed_rooms, index, info_from_merit_no(&list, tempw->merit_no));
         if (check == -1) {
@@ -437,7 +437,7 @@ int main()
             }
 
             // Write current node's information to the file
-            fprintf(file, "MIS: %llu, Name: %s, Branch: %s, Category: %s, Room Number: %d\n",
+            fprintf(file, "MIS: %I64u, Name: %s, Branch: %s, Category: %s, Room Number: %d\n",
                     tempw->mis, tempw->name, tempw->branch, tempw->category, tempw->room_no);
 
             // Close the file

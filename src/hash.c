@@ -3,15 +3,16 @@
 #include "../include/linked_list.h"
 
 // Function to create and initialize the hash table, size is total number of rooms 
-hash_table* create_hash_table(int size) {
+hash_table* create_hash_table(int size, int floors, int rooms_per_floor) {
     // Allocate memory for the hash table structure
     hash_table* ht = (hash_table*)malloc(sizeof(hash_table));
     if (ht == NULL) {
         printf("Memory allocation failed for hash table.\n");
-        return NULL;  // Return NULL if allocation fails
+        return NULL;    // Return NULL if allocation fails
     }
-
-    ht->size = size;  // Set the size of the hash table
+    ht->size = size;    // Set the size of the hash table
+    ht->floors = floors;
+    ht->rooms_per_floor = rooms_per_floor;
 
     // Allocate memory for the table array (array of pointers)
     ht->table = (student_node**)malloc(size * sizeof(student_node*));
@@ -30,32 +31,25 @@ hash_table* create_hash_table(int size) {
 }
 
 
-// Hash function to compute index based on room number
-int hash_function(int room_number, int table_size) {
-    if (room_number >= 101 && room_number <= 120) {
-        return (room_number - 101) % table_size;  // Map to bucket 0-19, rooms 101 - 120
-    } else if (room_number >= 201 && room_number <= 220) {
-        return (room_number - 201 + 20) % table_size;  // Map to bucket 20-39, rooms 201 - 220
-    } else if (room_number >= 301 && room_number <= 320) {
-        return (room_number - 301 + 40) % table_size;  // Map to bucket 40-59, rooms 301 - 320
-    }
-    return -1;  // Return -1 for invalid room numbers
+// Hash function — works for any number of floors and rooms
+int hash_function(int room_number, int floors, int rooms_per_floor) {
+    int floor_no = room_number / 100;         // e.g. 301 → floor 3
+    int room_no  = room_number % 100;         // e.g. 301 → room 1
+
+    if (floor_no < 1 || floor_no > floors)
+        return -1;
+    if (room_no < 1 || room_no > rooms_per_floor)
+        return -1;
+
+    return (floor_no - 1) * rooms_per_floor + (room_no - 1);
 }
 
-// Reverse hash function to retrieve room number from index
-int reverse_hash_function(int index) {
-    int room_number;
-
-    if (index >= 0 && index < 20) {
-        room_number = 101 + index;  // Rooms 101-120
-    } else if (index >= 20 && index < 40) {
-        room_number = 201 + (index - 20);  // Rooms 201-220
-    } else if (index >= 40 && index < 60) {
-        room_number = 301 + (index - 40);  // Rooms 301-320
-    } else {
-        room_number = -1;  // Invalid index
-    }
-    return room_number;
+// Reverse hash — converts index back to room number
+int reverse_hash_function(int index, int rooms_per_floor) {
+    if (index < 0) return -1;
+    int floor_no = index / rooms_per_floor + 1;
+    int room_no  = index % rooms_per_floor + 1;
+    return floor_no * 100 + room_no;
 }
 
 // Function to print room numbers and student names
@@ -65,7 +59,7 @@ void print_hash(hash_table* ht) {
             student_node* current = ht->table[i];  // Start at the head of the linked list
             
             while (current != NULL) {  // Traverse the linked list
-                int room_number = reverse_hash_function(i);
+                int room_number = reverse_hash_function(i, ht->rooms_per_floor);
                 if (room_number != -1) {
                     printf("  Room %d: %s\n", room_number, current->name);  // Print room number and student name
                 }
@@ -91,7 +85,7 @@ bool search_by_merit_no(hash_table* fix, hash_table* ht, unsigned int merit_no) 
         while (current != NULL) {
             if (current->merit_no == merit_no) {
                 // Print the room number when a match is found
-                int room_no = reverse_hash_function(current_index);
+                int room_no = reverse_hash_function(current_index, ht->rooms_per_floor);
                 // find person who allotted you
                 printf("%d by %s\n", room_no, (fix->table[current_index])->name);
                 found = true;
@@ -148,8 +142,7 @@ int append_to_hash(hash_table* ht, int index, student_node* temp_node) {
 
 // Function to remove nodes with a specific merit number from the hash table
 void remove_from_hash(hash_table* ht, unsigned int merit_no) {
-    bool found = false;  // To track if any nodes are found and removed
-
+    
     // Traverse the entire hash table
     for (int i = 0; i < ht->size; i++) {
         student_node* current = ht->table[i];
@@ -159,7 +152,6 @@ void remove_from_hash(hash_table* ht, unsigned int merit_no) {
         while (current != NULL) {
             // Check if the current node has the specified merit number
             if (current->merit_no == merit_no) {
-                found = true;
                 //printf("Removing student '%s' with Merit No: %u from Room No: %d\n",
                     //   current->name, current->merit_no, current->room_no);
 
@@ -200,137 +192,63 @@ void remove_from_hash(hash_table* ht, unsigned int merit_no) {
 
 // Function to print all empty rooms in the specified format
 void print_empty_rooms(hash_table* ht) {
-    //printf("List of empty rooms:\n");
-
-    // Room ranges for each floor
-    int floors[][2] = {
-        {101, 120}, // Floor 1: Room 101 - 120
-        {201, 220}, // Floor 2: Room 201 - 220
-        {301, 320}  // Floor 3: Room 301 - 320
-    };
-
-    // Flag to check if any empty room exists
     bool any_empty = false;
 
-    // Traverse each floor
-    for (int f = 0; f < 3; f++) {
-        int start = floors[f][0]; // Start room number
-        int end = floors[f][1];   // End room number
-
-        // Print header for the floor
-        printf("\nFloor %d:\n", (start / 100));
-
-        // Loop through the rooms in the floor
-        for (int room = start; room <= end; room++) {
-            int index = hash_function(room, ht->size);
-
-            // If the room is empty, print its number
+    for (int f = 1; f <= ht->floors; f++) {
+        printf("\nFloor %d:\n", f);
+        for (int r = 1; r <= ht->rooms_per_floor; r++) {
+            int room = f * 100 + r;
+            int index = hash_function(room, ht->floors, ht->rooms_per_floor);
             if (ht->table[index] == NULL) {
                 printf("%d  ", room);
                 any_empty = true;
             } else {
-                printf("     "); // Print spaces for occupied rooms
+                printf("     ");
             }
-
-            // Add a newline after every 10 rooms
-            if ((room % 10) == 0) {
-                printf("\n");
-            }
+            if (r % 10 == 0) printf("\n");
         }
     }
 
-    // If no empty rooms were found, print a message
-    if (!any_empty) {
-        printf("\nNo empty rooms available.\n");
-    }
+    if (!any_empty) printf("\nNo empty rooms available.\n");
 }
 
-
 void print_incomplete_rooms(hash_table *ht) {
-    // Room ranges for each floor
-    int floors[][2] = {
-        {101, 120}, // Floor 1: Room 101 - 120
-        {201, 220}, // Floor 2: Room 201 - 220
-        {301, 320}  // Floor 3: Room 301 - 320
-    };
-
-    // Flag to check if any incomplete room exists
     bool any_incomplete = false;
 
-    // Traverse each floor
-    for (int f = 0; f < 3; f++) {
-        int start = floors[f][0]; // Start room number
-        int end = floors[f][1];   // End room number
-
-        // Print header for the floor
-        printf("\nFloor %d (Rooms with less than 3 students):\n", (start / 100));
-
-        // Loop through the rooms in the floor
-        for (int room = start; room <= end; room++) {
-            int index = hash_function(room, ht->size);
+    for (int f = 1; f <= ht->floors; f++) {
+        printf("\nFloor %d (Rooms with less than 3 students):\n", f);
+        for (int r = 1; r <= ht->rooms_per_floor; r++) {
+            int room = f * 100 + r;
+            int index = hash_function(room, ht->floors, ht->rooms_per_floor);
             student_node *current = ht->table[index];
             int count = 0;
+            while (current != NULL) { count++; current = current->next; }
 
-            // Count the number of nodes (students) at this index
-            while (current != NULL) {
-                count++;
-                current = current->next;
-            }
-
-            // If the count is less than 3, print the room number
             if (count < 3) {
                 printf("%d  ", room);
                 any_incomplete = true;
             } else {
-                printf("     "); // Print spaces for rooms with 3 or more nodes
+                printf("     ");
             }
-
-            // Add a newline after every 10 rooms
-            if ((room % 10) == 0) {
-                printf("\n");
-            }
+            if (r % 10 == 0) printf("\n");
         }
     }
 
-    // If no incomplete rooms were found, print a message
-    if (!any_incomplete) {
-        printf("\nNo rooms with less than 3 students.\n");
-    }
+    if (!any_incomplete) printf("\nNo rooms with less than 3 students.\n");
 }
 
 
+
 int all_rooms_full(hash_table *ht) {
-    // Room ranges for each floor
-    int floors[][2] = {
-        {101, 120}, // Floor 1: Room 101 - 120
-        {201, 220}, // Floor 2: Room 201 - 220
-        {301, 320}  // Floor 3: Room 301 - 320
-    };
-
-    // Traverse each floor
-    for (int f = 0; f < 3; f++) {
-        int start = floors[f][0]; // Start room number
-        int end = floors[f][1];   // End room number
-
-        // Loop through the rooms in the floor
-        for (int room = start; room <= end; room++) {
-            int index = hash_function(room, ht->size);
+    for (int f = 1; f <= ht->floors; f++) {
+        for (int r = 1; r <= ht->rooms_per_floor; r++) {
+            int room = f * 100 + r;
+            int index = hash_function(room, ht->floors, ht->rooms_per_floor);
             student_node *current = ht->table[index];
             int count = 0;
-
-            // Count the number of nodes (students) at this index
-            while (current != NULL) {
-                count++;
-                current = current->next;
-            }
-
-            // If any room has fewer than 3 nodes, return 0
-            if (count < 3) {
-                return 0;
-            }
+            while (current != NULL) { count++; current = current->next; }
+            if (count < 3) return 0;
         }
     }
-
-    // If all rooms have exactly 3 nodes, return 1
     return 1;
 }

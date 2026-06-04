@@ -9,20 +9,22 @@
 
 // Structure for hash table
 typedef struct hash_table {
-    student_node** table;  // Array of pointers to student nodes (linked lists)
-    int size;              // Size of the hash table, total number of rooms available
+    student_node** table;   // Array of pointers to student nodes (linked lists)
+    int size;               // Size of the hash table, total number of rooms available
+    int floors;
+    int rooms_per_floor;
 } hash_table;
 
 // Function prototypes
 
 // Create and initialize the hash table
-hash_table* create_hash_table(int size);
+hash_table* create_hash_table(int size, int floors, int rooms_per_floor);
 
 // Hash function to compute index from room number
-int hash_function(int room_number, int table_size);
+int hash_function(int room_number, int floors, int rooms_per_floor);
 
 // Reverse hash function to get room number from index
-int reverse_hash_function(int index);
+int reverse_hash_function(int index, int rooms_per_floor);
 
 // Function to print all room numbers and student names
 void print_hash(hash_table* ht);
