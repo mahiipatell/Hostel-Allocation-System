@@ -49,6 +49,7 @@ int main()
 
     // initialize waiting list (queue)
     queue waiting_list;
+    init_queue(&waiting_list);
 
     student_node *temp = list.head;
 
@@ -212,25 +213,24 @@ int main()
         int room_number = 0;
 
         // IF PUT ON HOLD BY SOMEBODY ELSE
-        if (search_by_merit_no(fixed_rooms, hold_rooms, temp->merit_no))
+        bool on_hold = search_by_merit_no(fixed_rooms, hold_rooms, temp->merit_no);
+        if (on_hold)
         {
-            printf("These rooms have asked for you to be their roommate\n"); // print all rooms where they have been put on hold
-            printf("Enter desired room out of the following, if none enter 0\n"); //ask for their choice and give option to rejct and pick new room
+            printf("These rooms have asked for you to be their roommate\n");
+            printf("Enter desired room out of the following, if none enter 0\n");
             scanf("%d", &room_number);
 
             if (room_number != 0)
             {
-                // table size is total rooms ie total floors into total rooms
                 int index = hash_function(room_number, (l[0] * l[1]));
-                // add name to fixed room list by copying node info through searching dll by merit no then appending that copy
                 append_to_hash(fixed_rooms, index, info_from_merit_no(&list, temp->merit_no));
                 temp->room_no = room_number;
                 printf("Your room has been allotted\n");
             }
         }
-
+        
         // IF NOT PUT ON HOLD OR REJECTED ALLOCATED ROOM
-        if (!search_by_merit_no(fixed_rooms, hold_rooms, temp->merit_no) || room_number == 0)
+        if (!on_hold || room_number == 0)
         {
             // display empty
             printf("Enter desired room out of the following\n");
@@ -305,7 +305,6 @@ int main()
             }
         }
 
-        }
         else
         {
             // Open the file for appending
