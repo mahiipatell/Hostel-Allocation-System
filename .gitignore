@@ -1,0 +1,15 @@
+# Compiled output
+*.exe
+*.o
+*.out
+
+# Runtime generated files
+sorted_students.csv
+allocated_rooms.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
