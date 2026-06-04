@@ -47,4 +47,9 @@ void print_incomplete_rooms(hash_table *ht);
 //function to check if all rooms are at capacity
 int all_rooms_full(hash_table *ht);
 
+void save_hash_table(hash_table *ht, const char *filename);
+int load_hash_table(hash_table *ht, const char *filename);
+
+void swap_rooms(hash_table *ht, int room_a, int room_b);
+
 #endif  // HASH_H

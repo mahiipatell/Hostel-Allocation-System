@@ -252,3 +252,116 @@ int all_rooms_full(hash_table *ht) {
     }
     return 1;
 }
+
+
+// Save hash table to binary file
+void save_hash_table(hash_table *ht, const char *filename) {
+    FILE *f = fopen(filename, "wb");
+    if (!f) {
+        printf("Warning: could not save allocations to %s\n", filename);
+        return;
+    }
+
+    // Write floors and rooms_per_floor first
+    fwrite(&ht->floors, sizeof(int), 1, f);
+    fwrite(&ht->rooms_per_floor, sizeof(int), 1, f);
+
+    // For each bucket, write how many students are in it, then each student
+    for (int i = 0; i < ht->size; i++) {
+        int count = 0;
+        student_node *current = ht->table[i];
+        while (current != NULL) { count++; current = current->next; }
+
+        fwrite(&count, sizeof(int), 1, f);
+
+        current = ht->table[i];
+        while (current != NULL) {
+            // Write only the data fields, not the pointers
+            fwrite(&current->merit_no, sizeof(unsigned int), 1, f);
+            fwrite(current->name, sizeof(char), 100, f);
+            fwrite(&current->mis, sizeof(unsigned long long int), 1, f);
+            fwrite(current->branch, sizeof(char), 15, f);
+            fwrite(current->category, sizeof(char), 15, f);
+            fwrite(&current->cgpa, sizeof(float), 1, f);
+            fwrite(&current->weighted_cgpa, sizeof(float), 1, f);
+            fwrite(&current->room_no, sizeof(int), 1, f);
+            current = current->next;
+        }
+    }
+
+    fclose(f);
+    printf("Allocations saved to %s\n", filename);
+}
+
+// Load hash table from binary file
+// Returns 1 if loaded successfully, 0 if file doesn't exist
+int load_hash_table(hash_table *ht, const char *filename) {
+    FILE *f = fopen(filename, "rb");
+    if (!f) return 0;  // File doesn't exist, fresh start
+
+    int saved_floors, saved_rooms_per_floor;
+    fread(&saved_floors, sizeof(int), 1, f);
+    fread(&saved_rooms_per_floor, sizeof(int), 1, f);
+
+    // Check if saved config matches current config
+    if (saved_floors != ht->floors || saved_rooms_per_floor != ht->rooms_per_floor) {
+        printf("Warning: saved allocation config doesn't match current setup. Starting fresh.\n");
+        fclose(f);
+        return 0;
+    }
+
+    for (int i = 0; i < ht->size; i++) {
+        int count;
+        fread(&count, sizeof(int), 1, f);
+
+        for (int j = 0; j < count; j++) {
+            student_node *node = (student_node *)malloc(sizeof(student_node));
+            fread(&node->merit_no, sizeof(unsigned int), 1, f);
+            fread(node->name, sizeof(char), 100, f);
+            fread(&node->mis, sizeof(unsigned long long int), 1, f);
+            fread(node->branch, sizeof(char), 15, f);
+            fread(node->category, sizeof(char), 15, f);
+            fread(&node->cgpa, sizeof(float), 1, f);
+            fread(&node->weighted_cgpa, sizeof(float), 1, f);
+            fread(&node->room_no, sizeof(int), 1, f);
+            node->next = NULL;
+            node->prev = NULL;
+            append_to_hash(ht, i, node);
+        }
+    }
+
+    fclose(f);
+    printf("Previous allocations loaded from %s\n", filename);
+    return 1;
+}
+
+// Swap all students between two rooms
+void swap_rooms(hash_table *ht, int room_a, int room_b) {
+    int index_a = hash_function(room_a, ht->floors, ht->rooms_per_floor);
+    int index_b = hash_function(room_b, ht->floors, ht->rooms_per_floor);
+
+    if (index_a == -1 || index_b == -1) {
+        printf("Invalid room number(s).\n");
+        return;
+    }
+
+    // Swap the pointers at the two indices
+    student_node *temp = ht->table[index_a];
+    ht->table[index_a] = ht->table[index_b];
+    ht->table[index_b] = temp;
+
+    // Update room_no field for all students in both rooms
+    student_node *current = ht->table[index_a];
+    while (current != NULL) {
+        current->room_no = room_a;
+        current = current->next;
+    }
+
+    current = ht->table[index_b];
+    while (current != NULL) {
+        current->room_no = room_b;
+        current = current->next;
+    }
+
+    printf("Room %d and Room %d have been swapped.\n", room_a, room_b);
+}

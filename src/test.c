@@ -6,6 +6,7 @@
 
 #define OUTPUT_FILE "sorted_students.csv"
 #define CSV_FILE "data/student_data.csv"
+#define ALLOC_FILE "allocations.dat"
 
 // link logistic.c data_to_sorted_csv.c sorted_csv_to_dll.c linked_list.c hash.c stack.c queue.c while executing
 int main()
@@ -31,6 +32,13 @@ int main()
     // hash function initialize
     hash_table *fixed_rooms = create_hash_table(l[0] * l[1], l[0], l[1]);
     hash_table *hold_rooms = create_hash_table(l[0] * l[1], l[0], l[1]);
+
+    // Load previous allocations if they exist
+    if (load_hash_table(fixed_rooms, ALLOC_FILE)) {
+        printf("Resuming from previous session.\n");
+    } else {
+        printf("Starting fresh allocation session.\n");
+    }
 
     // all 6 stacks initialize as counters
     stack mechanical_general;
@@ -446,6 +454,36 @@ int main()
 
         temps = temps->next; // Move to the next node (next student)
     }
+    
+
+    // Post-allocation menu
+    printf("\n=== ALLOCATION COMPLETE ===\n");
+    char admin_choice;
+    do {
+        printf("\nPost-allocation options:\n");
+        printf("1. Swap two rooms\n");
+        printf("2. View all allocations\n");
+        printf("3. Exit\n");
+        printf("Enter choice: ");
+        scanf(" %c", &admin_choice);
+
+        if (admin_choice == '1') {
+            int room_a, room_b;
+            printf("Enter first room number: ");
+            scanf("%d", &room_a);
+            printf("Enter second room number: ");
+            scanf("%d", &room_b);
+            swap_rooms(fixed_rooms, room_a, room_b);
+
+        } else if (admin_choice == '2') {
+            print_hash(fixed_rooms);
+        }
+
+    } while (admin_choice != '3');
+    
+    
+    // Save final allocations
+    save_hash_table(fixed_rooms, ALLOC_FILE);
 
     return 0;
 }
